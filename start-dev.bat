@@ -1,0 +1,6 @@
+@echo off
+echo Starting backend...
+start cmd /k "cd C:\Users\olash\PycharmProjects\login_system && .venv\Scripts\activate && uvicorn app.main:app --reload"
+
+echo Starting frontend...
+start cmd /k "cd C:\Users\olash\PycharmProjects\login_system\frontend && npm run dev"
