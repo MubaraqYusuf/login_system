@@ -3,38 +3,30 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     setLoading(true);
-    setError(null);
+    setError("");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/login", {
+      const res = await fetch("http://127.0.0.1:8000/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Login failed");
+        throw new Error("Registration failed");
       }
 
-      const data = await res.json();
-
-      // TEMP (JWT will replace this)
-      localStorage.setItem("username", username);
-
-      router.push("/profile");
+      router.push("/login");
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -48,9 +40,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-      <div className="w-full max-w-sm rounded-2xl bg-zinc-900 p-8 shadow-xl">
+      <div className="w-full max-w-md rounded-2xl bg-zinc-900 p-8 shadow-xl">
         <h1 className="mb-6 text-center text-3xl font-bold text-white">
-          Welcome back
+          Create account
         </h1>
 
         {error && (
@@ -61,7 +53,7 @@ export default function LoginPage() {
 
         <div className="space-y-4">
           <input
-            className="w-full rounded-lg bg-zinc-800 p-3 text-white outline-none ring-1 ring-zinc-700 focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-zinc-800 p-3 text-white placeholder-zinc-400 outline-none ring-1 ring-zinc-700 focus:ring-2 focus:ring-blue-500"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -69,25 +61,25 @@ export default function LoginPage() {
 
           <input
             type="password"
-            className="w-full rounded-lg bg-zinc-800 p-3 text-white outline-none ring-1 ring-zinc-700 focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-lg bg-zinc-800 p-3 text-white placeholder-zinc-400 outline-none ring-1 ring-zinc-700 focus:ring-2 focus:ring-blue-500"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
           <button
-            onClick={handleLogin}
+            onClick={handleRegister}
             disabled={loading}
-            className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white hover:bg-blue-500 disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </div>
 
         <p className="mt-6 text-center text-sm text-zinc-400">
-          Don’t have an account?{" "}
-          <a href="/register" className="text-blue-400 hover:underline">
-            Create one
+          Already have an account?{" "}
+          <a href="/login" className="text-blue-400 hover:underline">
+            Sign in
           </a>
         </p>
       </div>
