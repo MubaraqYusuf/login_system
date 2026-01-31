@@ -2,30 +2,30 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegister = async () => {
-    const res = await fetch("http://127.0.0.1:8000/register", {
+  const handleLogin = async () => {
+    const res = await fetch("http://127.0.0.1:8000/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
 
-    if (!res.ok) return setError("Registration failed");
+    if (!res.ok) return setError("Invalid credentials");
 
-    router.push("/login");
+    const data = await res.json();
+    localStorage.setItem("token", data.access_token);
+    router.push("/profile");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="bg-zinc-900 p-10 rounded-xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Create account
-        </h1>
+        <h1 className="text-3xl font-bold text-center mb-6">Welcome back</h1>
 
         {error && <p className="text-red-400 mb-4">{error}</p>}
 
@@ -42,11 +42,18 @@ export default function RegisterPage() {
         />
 
         <button
-          onClick={handleRegister}
-          className="w-full bg-green-600 py-3 rounded hover:bg-green-500"
+          onClick={handleLogin}
+          className="w-full bg-blue-600 py-3 rounded hover:bg-blue-500"
         >
-          Register
+          Sign in
         </button>
+
+        <p className="mt-4 text-sm text-center">
+          Don’t have an account?{" "}
+          <a href="/register" className="text-blue-400">
+            Create one
+          </a>
+        </p>
       </div>
     </div>
   );

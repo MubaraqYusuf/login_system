@@ -1,82 +1,70 @@
 "use client";
-
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
-
-  const [username] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("username");
-    }
-    return null;
-  });
+  const [user, setUser] = useState<string>("");
 
   useEffect(() => {
-    if (!username) {
-      router.push("/login");
-    }
-  }, [username, router]);
+    const token = localStorage.getItem("token");
+    if (!token) return router.push("/login");
 
-  const handleLogout = () => {
-    localStorage.removeItem("username");
+    fetch("http://127.0.0.1:8000/me", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setUser(data.username))
+      .catch(() => router.push("/login"));
+  }, [router]);
+
+  const logout = () => {
+    localStorage.removeItem("token");
     router.push("/login");
   };
 
-  const handleDelete = async () => {
-    if (!username) return;
+  const deleteAccount = async () => {
+    if (!confirm("Delete your account permanently?")) return;
 
-    const confirmed = confirm(
-      "Are you sure you want to delete your account? This cannot be undone."
-    );
+    const token = localStorage.getItem("token");
 
-    if (!confirmed) return;
-
-    await fetch(`http://127.0.0.1:8000/delete/${username}`, {
+    await fetch("http://127.0.0.1:8000/delete", {
       method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    localStorage.removeItem("username");
-    router.push("/register");
+    logout();
   };
 
-  if (!username) return null;
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
-      {/* TOP BAR */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex justify-between items-center p-6 border-b border-zinc-800">
+        <h2 className="text-xl font-bold">Dashboard</h2>
+        <button
+          onClick={logout}
+          className="bg-zinc-800 px-4 py-2 rounded"
+        >
+          Logout
+        </button>
+      </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={handleLogout}
-            className="rounded-lg bg-zinc-800 px-4 py-2 text-sm hover:bg-zinc-700 transition"
-          >
-            Logout
-          </button>
-
-          <button
-            onClick={handleDelete}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-500 transition"
-          >
-            Delete Account
-          </button>
+      <div className="flex items-center justify-center h-[70vh]">
+        <div className="bg-zinc-900 p-10 rounded-xl text-center">
+          <h1 className="text-3xl mb-2">
+            Welcome, <span className="text-blue-400">{user}</span> 👋
+          </h1>
+          <p className="text-zinc-400">Logged in successfully.</p>
         </div>
-      </header>
+      </div>
 
-      {/* MAIN CONTENT */}
-      <main className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-md rounded-2xl bg-zinc-900 p-10 shadow-xl text-center">
-          <h2 className="text-3xl font-bold mb-3">
-            Welcome, <span className="text-blue-400">{username}</span> 👋
-          </h2>
-          <p className="text-zinc-400">
-            You’re logged in successfully.
-          </p>
-        </div>
-      </main>
+      <div className="flex justify-center pb-10">
+        <button
+          onClick={deleteAccount}
+          className="bg-red-600 px-6 py-3 rounded hover:bg-red-500"
+        >
+          Delete Account
+        </button>
+      </div>
     </div>
   );
 }
