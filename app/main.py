@@ -1,40 +1,61 @@
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Depends, HTTPException, Response
+from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+
+from .database import SessionLocal, engine
+from . import models, crud, schemas, auth
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Templates folder
-templates = Jinja2Templates(directory="app/templates")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
+@app.get("/")
+def root():
+    return {"status": "API is running"}
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+@app.post("/register")
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    if crud.get_user(db, user.username):
+        raise HTTPException(status_code=400, detail="Username already exists")
 
+    crud.create_user(db, user.username, user.password)
+    return {"message": "Account created successfully"}
 
-@app.post("/login", response_class=HTMLResponse)
-async def login(
-    request: Request,
-    username: str = Form(...),
-    password: str = Form(...)
-):
-    if username == "admin" and password == "admin":
-        return HTMLResponse("""
-            <h2 style="text-align:center;">Login Successful 🎉</h2>
-            <p style="text-align:center;">Welcome, admin!</p>
-            <div style="text-align:center;">
-                <a href="/">Logout</a>
-            </div>
-        """)
+@app.post("/login")
+def login(user: schemas.UserLogin, response: Response, db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user.username)
 
-    return HTMLResponse("""
-        <h2 style="text-align:center;color:red;">Invalid Login ❌</h2>
-        <div style="text-align:center;">
-            <a href="/">Try Again</a>
-        </div>
-    """)
+    if not db_user or not auth.verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = auth.create_access_token({"sub": user.username})
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        samesite="lax"
+    )
+
+    return {"message": "Login successful"}
+
+@app.delete("/delete/{username}")
+def delete_user(username: str, db: Session = Depends(get_db)):
+    if crud.delete_user(db, username):
+        return {"message": "User deleted"}
+    raise HTTPException(status_code=404, detail="User not found")

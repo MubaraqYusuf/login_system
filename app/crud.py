@@ -1,30 +1,24 @@
 from sqlalchemy.orm import Session
-from .models import User
-from .auth import hash_password, verify_password
+from . import models
+from .auth import hash_password
 
-def get_user_by_username(db: Session, username: str):
-    return db.query(User).filter(User.username == username).first()
+def get_user(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
 
 def create_user(db: Session, username: str, password: str):
-    hashed = hash_password(password)
-    user = User(username=username, password=hashed)
-    db.add(user)
+    db_user = models.User(
+        username=username,
+        hashed_password=hash_password(password)
+    )
+    db.add(db_user)
     db.commit()
-    db.refresh(user)
-    return user
-
-def authenticate_user(db: Session, username: str, password: str):
-    user = get_user_by_username(db, username)
-    if not user:
-        return None
-    if not verify_password(password, user.password):
-        return None
-    return user
+    db.refresh(db_user)
+    return db_user
 
 def delete_user(db: Session, username: str):
-    user = get_user_by_username(db, username)
-    if not user:
-        return False
-    db.delete(user)
-    db.commit()
-    return True
+    user = get_user(db, username)
+    if user:
+        db.delete(user)
+        db.commit()
+        return True
+    return False
