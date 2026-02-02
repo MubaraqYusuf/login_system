@@ -2,16 +2,17 @@ from fastapi import FastAPI, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import SessionLocal, engine
-from . import models, crud, schemas, auth
+from . import models, schemas, crud
+from .database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# CORS (important for frontend connection)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,38 +25,33 @@ def get_db():
     finally:
         db.close()
 
+
 @app.get("/")
 def root():
-    return {"status": "API is running"}
+    return {"status": "Backend running"}
+
 
 @app.post("/register")
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    if crud.get_user(db, user.username):
+    db_user = crud.get_user_by_username(db, user.username)
+    if db_user:
         raise HTTPException(status_code=400, detail="Username already exists")
 
-    crud.create_user(db, user.username, user.password)
-    return {"message": "Account created successfully"}
+    return crud.create_user(db, user)
+
 
 @app.post("/login")
 def login(user: schemas.UserLogin, response: Response, db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user.username)
+    db_user = crud.authenticate_user(db, user.username, user.password)
 
-    if not db_user or not auth.verify_password(user.password, db_user.hashed_password):
+    if not db_user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = auth.create_access_token({"sub": user.username})
-
     response.set_cookie(
-        key="access_token",
-        value=token,
+        key="session",
+        value=str(db_user.id),
         httponly=True,
         samesite="lax"
     )
 
     return {"message": "Login successful"}
-
-@app.delete("/delete/{username}")
-def delete_user(username: str, db: Session = Depends(get_db)):
-    if crud.delete_user(db, username):
-        return {"message": "User deleted"}
-    raise HTTPException(status_code=404, detail="User not found")
