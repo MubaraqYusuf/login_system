@@ -1,53 +1,71 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import api from "@/src/lib/api";
 
 export default function RegisterPage() {
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleRegister = async () => {
-    const res = await fetch("http://127.0.0.1:8000/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    });
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
 
-    if (!res.ok) return setError("Registration failed");
+    try {
+      await api.post("/register", {
+        username,
+        password,
+      });
 
-    router.push("/login");
+      router.push("/login");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.detail || "Registration failed");
+      } else {
+        setError("Registration failed");
+      }
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black">
-      <div className="bg-zinc-900 p-10 rounded-xl w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Create account
-        </h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="p-6 bg-white shadow rounded w-80"
+      >
+        <h2 className="text-xl mb-4 font-bold">Register</h2>
 
-        {error && <p className="text-red-400 mb-4">{error}</p>}
+        {error && <p className="text-red-500 mb-2">{error}</p>}
 
         <input
+          className="border p-2 w-full mb-3"
           placeholder="Username"
-          className="w-full mb-3 p-3 rounded bg-zinc-800"
+          value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
+
         <input
-          placeholder="Password"
           type="password"
-          className="w-full mb-4 p-3 rounded bg-zinc-800"
+          className="border p-2 w-full mb-3"
+          placeholder="Password"
+          value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <button
-          onClick={handleRegister}
-          className="w-full bg-green-600 py-3 rounded hover:bg-green-500"
+          type="submit"
+          className="bg-blue-600 hover:bg-blue-700 text-white p-2 w-full rounded"
         >
           Register
         </button>
-      </div>
+      </form>
     </div>
   );
 }
