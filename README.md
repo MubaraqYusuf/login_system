@@ -233,11 +233,3 @@ This project is licensed for **educational and personal use**.
 
 ---
 
-# ⭐ Credits
-
-Built with ❤️ using:
-
-* FastAPI
-* Next.js
-* SQLAlchemy
-* JWT
