@@ -1,64 +1,54 @@
-# 🔐 Full Stack Login System
+# 🔐 Full-Stack Login System — FastAPI & Next.js
 
-A modern **full-stack authentication system** built with:
-
-* **Backend:** FastAPI + SQLAlchemy + JWT + Bcrypt
-* **Frontend:** Next.js (App Router) + TypeScript + Axios
-* **Database:** SQLite (easy local dev, upgradeable to PostgreSQL / MySQL)
-
-This project provides **secure user registration and login functionality** using industry best practices.
+A modern **full-stack authentication system** built using **FastAPI (backend)** and **Next.js (frontend)**, featuring secure **JWT authentication**, **password hashing**, and a clean API architecture.
 
 ---
 
-# 🚀 Features
+## 🚀 Features
 
-* ✅ User Registration
-* ✅ Secure Password Hashing (bcrypt)
-* ✅ User Login
-* ✅ JWT Authentication
-* ✅ Protected Backend Routes
-* ✅ Full Frontend Integration
-* ✅ CORS Handling
-* ✅ Clean Project Architecture
-
----
-
-# 🧱 Tech Stack
-
-## Backend
-
-* FastAPI
-* SQLAlchemy ORM
-* Passlib + Bcrypt
-* JWT Authentication
-* SQLite (default)
-
-## Frontend
-
-* Next.js 16 (App Router)
-* TypeScript
-* Axios
-* Tailwind CSS
+- 🔐 Secure user registration & login  
+- 🔑 Password hashing using bcrypt  
+- 🪪 JWT-based authentication  
+- ⚡ FastAPI backend  
+- 🌐 Next.js frontend  
+- 🧱 Clean project structure  
+- 🔄 CORS-enabled API for frontend integration  
 
 ---
 
-# 📁 Project Structure
+## 🧰 Tech Stack
+
+### Backend
+- **FastAPI**
+- **SQLAlchemy**
+- **SQLite**
+- **Passlib (bcrypt)**
+- **JWT (python-jose)**
+- **Uvicorn**
+
+### Frontend
+- **Next.js**
+- **TypeScript**
+- **Axios**
+- **Tailwind CSS**
+
+---
+
+## 📁 Project Structure
 
 ```
 login_system/
 │
-├── app/                    # Backend application
+├── app/                  # FastAPI backend
 │   ├── main.py
-│   ├── crud.py
 │   ├── models.py
 │   ├── schemas.py
+│   ├── crud.py
 │   ├── database.py
 │   └── auth.py
 │
-├── frontend/               # Next.js frontend
-│   ├── app/
-│   ├── components/
-│   ├── lib/
+├── frontend/             # Next.js frontend
+│   ├── src/
 │   └── package.json
 │
 └── README.md
@@ -66,141 +56,54 @@ login_system/
 
 ---
 
-# ⚙️ Backend Setup (FastAPI)
+## ⚙️ Setup Instructions
 
-### 1️⃣ Create virtual environment
+### 1️⃣ Clone the repository
+
+```bash
+git clone https://github.com/your-username/login_system.git
+cd login_system
+```
+
+---
+
+## 🐍 Backend Setup (FastAPI)
+
+### Create virtual environment
 
 ```bash
 python -m venv .venv
 ```
 
-### 2️⃣ Activate virtual environment
+### Activate environment
 
 **Windows:**
-
-```powershell
+```bash
 .venv\Scripts\activate
 ```
 
 **Mac/Linux:**
-
 ```bash
 source .venv/bin/activate
 ```
 
-### 3️⃣ Install dependencies
+### Install dependencies
 
 ```bash
-pip install fastapi uvicorn sqlalchemy passlib[bcrypt] python-jose python-multipart
+pip install -r requirements.txt
 ```
 
-### 4️⃣ Run backend server
+### Run backend server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Backend runs at:
+Backend will run at:
 
 ```
 http://127.0.0.1:8000
 ```
-
-Swagger API docs:
-
-```
-http://127.0.0.1:8000/docs
-```
-
----
-
-# 🎨 Frontend Setup (Next.js)
-
-### 1️⃣ Navigate to frontend folder
-
-```bash
-cd frontend
-```
-
-### 2️⃣ Install dependencies
-
-```bash
-npm install
-```
-
-### 3️⃣ Start development server
-
-```bash
-npm run dev
-```
-
-Frontend runs at:
-
-```
-http://localhost:3000
-```
-
----
-
-# 🔁 Full Development Startup
-
-Run **two terminals**:
-
-### Terminal 1 – Backend:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-### Terminal 2 – Frontend:
-
-```bash
-cd frontend
-npm run dev
-```
-
----
-
-# 🔐 Authentication Flow
-
-```
-Frontend → FastAPI → Database → JWT → Frontend
-```
-
-### Register
-
-```
-POST /register
-```
-
-### Login
-
-```
-POST /login
-```
-
-Returns:
-
-```json
-{
-  "access_token": "JWT_TOKEN",
-  "token_type": "bearer"
-}
-```
-
----
-
-# 🛡 Security Highlights
-
-* Passwords are **never stored in plaintext**
-* Bcrypt hashing
-* JWT authentication
-* CORS configured
-* Token expiration support
-
----
-
-# 🧪 Testing
 
 Swagger UI:
 
@@ -208,7 +111,17 @@ Swagger UI:
 http://127.0.0.1:8000/docs
 ```
 
-Frontend:
+---
+
+## 🌐 Frontend Setup (Next.js)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend will run at:
 
 ```
 http://localhost:3000
@@ -216,20 +129,55 @@ http://localhost:3000
 
 ---
 
-# 🛠 Future Improvements
+## 🔁 API Endpoints
 
-* 🔐 Refresh tokens
-* 🧾 Email verification
-* 🔁 Password reset
-* 👤 Profile management
-* 🔒 Role-based access control
-* 🌍 Production deployment (Docker + Nginx)
-
----
-
-# 📜 License
-
-This project is licensed for **educational and personal use**.
+| Method | Endpoint   | Description        |
+|---------|-------------|-------------------|
+| POST    | /register   | Register new user |
+| POST    | /login      | Login user        |
+| GET     | /           | Health check      |
 
 ---
 
+## 🔐 Authentication Flow
+
+1. User registers with username & password  
+2. Password is securely hashed using bcrypt  
+3. JWT token is generated on login  
+4. Token is used for authenticated requests  
+
+---
+
+## 🛡️ Security Features
+
+- Password hashing using **bcrypt**
+- JWT access tokens
+- SQL injection safe ORM queries
+- CORS protection
+
+---
+
+## 🚀 Future Improvements
+
+- Refresh tokens
+- Role-based authentication
+- Email verification
+- OAuth login (Google, GitHub)
+- Docker deployment
+- Rate limiting & security headers
+
+---
+
+## 📜 License
+
+This project is open-source and available under the **MIT License**.
+
+---
+
+## 👨‍💻 Author
+
+Built by **Your Name**
+
+---
+
+⭐ If you found this project useful, consider giving it a **star**!
